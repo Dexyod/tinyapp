@@ -10,6 +10,10 @@ app.set("view engine", "ejs");
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({ extended: true }));
 
+// Import randomStringGenerator function
+const randomString = require("./randomString");
+
+// placeholder database for urls for now
 const urlDatabase = {
   b2xVn2: "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com",
@@ -37,7 +41,10 @@ app.get("/urls/new", (req, res) => {
 });
 
 // POST Urls/new Route to create new url
-// app.post("/url/new", (req, res) => {});
+app.post("/urls", (req, res) => {
+  console.log(req.body);
+  res.send("Ok");
+});
 
 // Urls Show Route
 app.get("/urls/:shortURL", (req, res) => {
