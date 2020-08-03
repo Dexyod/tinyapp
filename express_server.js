@@ -42,11 +42,14 @@ app.get("/urls/new", (req, res) => {
 
 // POST Urls/new Route to create new url
 app.post("/urls", (req, res) => {
-  console.log(req.body);
-  // res.send("Ok");
+  // console.log(req.body);
+  let shortURL = randomString();
+
+  //add key-value pair to the database
+  urlDatabase[shortURL] = req.body.longURL;
 
   //redirect back to urls
-  res.redirect("/urls");
+  res.redirect(`/urls/${shortURL}`);
 });
 
 // Urls Show Route
