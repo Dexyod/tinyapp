@@ -45,7 +45,6 @@ app.post("/urls", (req, res) => {
   // console.log(req.body);
   let shortURL = randomString();
 
-  //add key-value pair to the database
   urlDatabase[shortURL] = req.body.longURL;
 
   //redirect back to urls
@@ -59,12 +58,20 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   res.redirect("/urls");
 });
 
+// Update Route
+app.post("/urls/:shortURL/update", (req, res) => {
+  urlDatabase[req.params.shortURL] = req.body.longURL;
+
+  res.redirect("/urls");
+});
+
 // Urls Show Route
 app.get("/urls/:shortURL", (req, res) => {
   let templateVars = {
     shortURL: req.params.shortURL,
-    longURL: req.params.longURL,
+    longURL: urlDatabase[req.params.shortURL],
   };
+
   res.render("urls_show", templateVars);
 });
 
