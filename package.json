@@ -2,16 +2,17 @@
   "name": "tinyapp",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "express_server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "./node_modules/.bin/nodemon -L express_server.js"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Dexyod/tinyapp.git"
   },
   "keywords": [],
-  "author": "",
+  "author": "Declan O'Donnell [dexyod43@gmail.com]",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/Dexyod/tinyapp/issues"
@@ -20,6 +21,7 @@
   "dependencies": {
     "body-parser": "^1.19.0",
     "ejs": "^3.1.3",
-    "express": "^4.17.1"
+    "express": "^4.17.1",
+    "nodemon": "^2.0.4"
   }
 }
