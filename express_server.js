@@ -40,13 +40,14 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
 
-// POST Urls/new Route to create new url
+// POST Urls/new Route to CREATE new url
 app.post("/urls", (req, res) => {
   // console.log(req.body);
   let shortURL = randomString();
 
   urlDatabase[shortURL] = req.body.longURL;
 
+  console.log(`New URL ${shortURL} Created`);
   //redirect back to urls
   res.redirect(`/urls/${shortURL}`);
 });
@@ -55,13 +56,16 @@ app.post("/urls", (req, res) => {
 app.post("/urls/:shortURL/delete", (req, res) => {
   // console.log(req.params.shortURL);
   delete urlDatabase[req.params.shortURL];
+
+  console.log(`${req.params.shortURL} Deleted`);
   res.redirect("/urls");
 });
 
 // Update Route
-app.post("/urls/:shortURL/update", (req, res) => {
+app.post("/urls/:shortURL", (req, res) => {
+  
   urlDatabase[req.params.shortURL] = req.body.longURL;
-
+  console.log(`${req.body.longURL} Updated`);
   res.redirect("/urls");
 });
 
@@ -79,7 +83,6 @@ app.get("/urls/:shortURL", (req, res) => {
 app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL];
 
-  // console.log(longURL);
   res.redirect(longURL);
 });
 
