@@ -27,6 +27,14 @@ app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
+// GET Urls/new Route
+app.get("/urls/new", (req, res) => {
+  res.render("urls_new");
+});
+
+// POST Urls/new Route to create new url
+// app.post("/url/new", (req, res) => {});
+
 // Urls Show Route
 app.get("/urls/:shortURL", (req, res) => {
   let templateVars = {
