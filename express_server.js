@@ -43,7 +43,10 @@ app.get("/urls/new", (req, res) => {
 // POST Urls/new Route to create new url
 app.post("/urls", (req, res) => {
   console.log(req.body);
-  res.send("Ok");
+  // res.send("Ok");
+
+  //redirect back to urls
+  res.redirect("/urls");
 });
 
 // Urls Show Route
