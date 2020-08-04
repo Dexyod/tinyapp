@@ -14,8 +14,10 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Set up morgan
 app.use(morgan("dev"));
 
-// Import randomStringGenerator function
+// Import randomStringGenerator and users DB
 const randomString = require("./randomString");
+const users = require("./usersDb");
+const generateRandomString = require("./randomString");
 
 // placeholder database for urls for now
 const urlDatabase = {
@@ -30,15 +32,17 @@ app.get("/hello", (req, res) => {
 
 // Home Route
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  res.send("Hello!!");
 });
 
 // Urls Route
 app.get("/urls", (req, res) => {
   let templateVars = {
     urls: urlDatabase,
-    username: req.cookies["username"],
+    username: req.cookies["user_id"],
+    user: users,
   };
+
   res.render("urls_index", templateVars);
 });
 
@@ -50,14 +54,15 @@ app.get("/urls.json", (req, res) => {
 // GET urls_new Route
 app.get("/urls/new", (req, res) => {
   let templateVars = {
-    username: req.cookies["username"],
+    username: req.cookies["user_id"],
+    user: { users },
   };
+
   res.render("urls_new", templateVars);
 });
 
 // POST to CREATE new url
 app.post("/urls", (req, res) => {
-  // console.log(req.body);
   let shortURL = randomString();
 
   urlDatabase[shortURL] = `http://${req.body.longURL}`;
@@ -69,7 +74,6 @@ app.post("/urls", (req, res) => {
 
 // Delete Route
 app.post("/urls/:shortURL/delete", (req, res) => {
-  // console.log(req.params.shortURL);
   delete urlDatabase[req.params.shortURL];
 
   console.log(`${req.params.shortURL} Deleted`);
@@ -79,7 +83,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 // Update Route
 app.post("/urls/:shortURL", (req, res) => {
   urlDatabase[req.params.shortURL] = `http://${req.body.longURL}`;
-  console.log(`${req.body.longURL} Updated`);
+
   res.redirect("/urls");
 });
 
@@ -88,7 +92,8 @@ app.get("/urls/:shortURL", (req, res) => {
   let templateVars = {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL],
-    username: req.cookies["username"],
+    username: req.cookies["user_id"],
+    user: { users },
   };
 
   res.render("urls_show", templateVars);
@@ -101,24 +106,39 @@ app.get("/u/:shortURL", (req, res) => {
   res.redirect(longURL);
 });
 
-// Registration Route
+// Register GET Route
 app.get("/register", (req, res) => {
   let templateVars = {
-    username: req.cookies["username"],
+    username: req.cookies["user_id"],
+    user: { users },
   };
   res.render("register", templateVars);
 });
 
+// Register POST Route
+app.post("/register", (req, res) => {
+  let userID = generateRandomString();
+
+  users[userID] = {
+    id: userID,
+    email: req.body.email,
+    password: req.body.password,
+  };
+  res.cookie("user_id", userID);
+  console.log(users);
+  res.redirect("/urls");
+});
+
 // Login POST Route
 app.post("/login", (req, res) => {
-  res.cookie("username", req.body.username);
+  res.cookie("user_id", req.body.username);
 
   res.redirect("/urls");
 });
 
 // Log Out POST Route
 app.post("/logout", (req, res) => {
-  res.clearCookie("username", req.body.username);
+  res.clearCookie("user_id", req.body.username);
 
   res.redirect("/urls");
 });
