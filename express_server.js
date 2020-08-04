@@ -1,15 +1,15 @@
 // Set up requirements for server
 const express = require("express");
 const app = express();
+const morgan = require("morgan");
 const PORT = 8080;
-
 // Set up EJS
 app.set("view engine", "ejs");
-
 // Set up body-parser;
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({ extended: true }));
-
+// Set up morgan
+app.use(morgan("dev"));
 // Import randomStringGenerator function
 const randomString = require("./randomString");
 
@@ -18,6 +18,11 @@ const urlDatabase = {
   b2xVn2: "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com",
 };
+
+// Hello Route
+app.get("/hello", (req, res) => {
+  res.send("<html><body>Hello <b>World</b></body></html>\n");
+});
 
 // Home Route
 app.get("/", (req, res) => {
@@ -35,17 +40,17 @@ app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
-// GET Urls/new Route
+// GET urls_new Route
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
 
-// POST Urls/new Route to CREATE new url
+// POST to CREATE new url
 app.post("/urls", (req, res) => {
   // console.log(req.body);
   let shortURL = randomString();
 
-  urlDatabase[shortURL] = req.body.longURL;
+  urlDatabase[shortURL] = `http://${req.body.longURL}`;
 
   console.log(`New URL ${shortURL} Created`);
   //redirect back to urls
@@ -63,13 +68,12 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 
 // Update Route
 app.post("/urls/:shortURL", (req, res) => {
-  
-  urlDatabase[req.params.shortURL] = req.body.longURL;
+  urlDatabase[req.params.shortURL] = `http://${req.body.longURL}`;
   console.log(`${req.body.longURL} Updated`);
   res.redirect("/urls");
 });
 
-// Urls Show Route
+// urls_show Route
 app.get("/urls/:shortURL", (req, res) => {
   let templateVars = {
     shortURL: req.params.shortURL,
@@ -86,11 +90,7 @@ app.get("/u/:shortURL", (req, res) => {
   res.redirect(longURL);
 });
 
-// Hello Route
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
-});
-
+// Start listener on PORT
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}`);
 });
