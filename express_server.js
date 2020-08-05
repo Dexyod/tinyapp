@@ -54,8 +54,11 @@ app.get("/urls/new", (req, res) => {
   let templateVars = {
     user: users[req.cookies["user_id"]],
   };
-
-  res.render("urls_new", templateVars);
+  if (req.cookies["user_id"] === null) {
+    res.redirect("/login");
+  } else {
+    res.render("urls_new", templateVars);
+  }
 });
 
 // POST to CREATE new url
@@ -152,7 +155,6 @@ app.get("/login", (req, res) => {
 
 // Login POST Route
 app.post("/login", (req, res) => {
-  const userID = randomUID();
   const email = req.body.email;
   const password = req.body.password;
 
