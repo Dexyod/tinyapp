@@ -20,14 +20,10 @@ app.use(morgan("dev"));
 
 // placeholder database for urls for now
 const urlDatabase = {
-  b2xVn2: "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com",
+  b6UTxQ: { longURL: "https://www.tsn.ca", userID: "aJ48lW" },
+  "9sm5xK": { longURL: "http://www.google.com", userID: "test" },
+  b2xVn2: { longURL: "http://www.lighthouselabs.ca", userID: "userRandomID" },
 };
-
-// Hello Route
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
-});
 
 // Home Route
 app.get("/", (req, res) => {
@@ -82,7 +78,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 
 // Update Route
 app.post("/urls/:shortURL", (req, res) => {
-  urlDatabase[req.params.shortURL] = `http://${req.body.longURL}`;
+  urlDatabase[req.params.shortURL].longURL = `http://${req.body.longURL}`;
 
   res.redirect("/urls");
 });
@@ -100,7 +96,7 @@ app.get("/urls/:shortURL", (req, res) => {
 
 // ShortURL requests handler
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL];
+  const longURL = urlDatabase[req.params.shortURL].longURL;
 
   res.redirect(longURL);
 });
