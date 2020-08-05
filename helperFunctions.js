@@ -1,4 +1,5 @@
 const users = require("./usersDb");
+const urlDatabase = require("./urlDatabase");
 
 const isEmptyString = (email, password) => {
   if (email === "" || password === "") {
@@ -32,9 +33,23 @@ const randomUID = () => {
   return randomString;
 };
 
+const urlsForUser = (id) => {
+  let filtered = {};
+  for (const key in urlDatabase) {
+    if (urlDatabase[key].userID === id) {
+      filtered[key] = {
+        longURL: urlDatabase[key].longURL,
+        userID: id,
+      };
+    }
+  }
+
+  return filtered;
+};
 module.exports = {
   isEmptyString,
   isEmailInUse,
   authLogin,
   randomUID,
+  urlsForUser,
 };

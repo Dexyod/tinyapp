@@ -10,34 +10,35 @@ const {
   isEmptyString,
   isEmailInUse,
   authLogin,
+  urlsForUser,
 } = require("./helperFunctions");
 const users = require("./usersDb");
+const urlDatabase = require("./urlDatabase");
 
 app.use(cookieParser());
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(morgan("dev"));
 
-// placeholder database for urls for now
-const urlDatabase = {
-  b6UTxQ: { longURL: "https://www.tsn.ca", userID: "aJ48lW" },
-  "9sm5xK": { longURL: "http://www.google.com", userID: "test" },
-  b2xVn2: { longURL: "http://www.lighthouselabs.ca", userID: "userRandomID" },
-};
-
 // Home Route
 app.get("/", (req, res) => {
-  res.send("Hello!!");
+  res.redirect("/urls");
 });
 
 // Urls Route
 app.get("/urls", (req, res) => {
-  let templateVars = {
-    urls: urlDatabase,
-    user: users[req.cookies["user_id"]],
-  };
+  let userID = req.cookies["user_id"];
 
-  res.render("urls_index", templateVars);
+  if (userID) {
+    let templateVars = {
+      urls: urlsForUser(userID),
+      user: users[req.cookies["user_id"]],
+    };
+    console.log(templateVars);
+    res.render("urls_index", templateVars);
+  } else {
+    res.redirect("/login");
+  }
 });
 
 // Urls Route for JSON
@@ -60,8 +61,12 @@ app.get("/urls/new", (req, res) => {
 // POST to CREATE new url
 app.post("/urls", (req, res) => {
   let shortURL = randomUID();
+  const userID = req.cookies["user_id"];
 
-  urlDatabase[shortURL] = `http://${req.body.longURL}`;
+  urlDatabase[shortURL] = {
+    longURL: `http://${req.body.longURL}`,
+    userID: userID,
+  };
 
   console.log(`New URL ${shortURL} Created`);
   //redirect back to urls
