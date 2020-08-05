@@ -1,23 +1,18 @@
 // Set up requirements for server
 const express = require("express");
 const app = express();
+const cookieParser = require("cookie-parser");
+const bodyParser = require("body-parser");
 const morgan = require("morgan");
 const PORT = 8080;
-// Set up cookie-parser
-const cookieParser = require("cookie-parser");
-app.use(cookieParser());
-// Set up EJS
-app.set("view engine", "ejs");
-// Set up body-parser;
-const bodyParser = require("body-parser");
-app.use(bodyParser.urlencoded({ extended: true }));
-// Set up morgan
-app.use(morgan("dev"));
-
-// Import randomStringGenerator and users DB
-const randomString = require("./randomString");
+const randomUID = require("./randomString");
 const users = require("./usersDb");
-const generateRandomString = require("./randomString");
+const authUsers = require("./authUsers");
+
+app.use(cookieParser());
+app.set("view engine", "ejs");
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(morgan("dev"));
 
 // placeholder database for urls for now
 const urlDatabase = {
@@ -63,13 +58,13 @@ app.get("/urls/new", (req, res) => {
 
 // POST to CREATE new url
 app.post("/urls", (req, res) => {
-  let shortURL = randomString();
+  let shortURL = randomUID();
 
   urlDatabase[shortURL] = `http://${req.body.longURL}`;
 
   console.log(`New URL ${shortURL} Created`);
   //redirect back to urls
-  res.redirect(`/urls/${shortURL}`);
+  res.redirect(`/urls`);
 });
 
 // Delete Route
@@ -111,29 +106,40 @@ app.get("/register", (req, res) => {
   let templateVars = {
     username: req.cookies["user_id"],
     user: { users },
+    error: "",
   };
   res.render("register", templateVars);
 });
 
 // Register POST Route
 app.post("/register", (req, res) => {
-  let userID = generateRandomString();
+  const userID = randomUID();
 
-  users[userID] = {
-    id: userID,
-    email: req.body.email,
-    password: req.body.password,
-  };
-  res.cookie("user_id", userID);
+  if (authUsers(req.body.email, req.body.password)) {
+    users[userID] = {
+      id: userID,
+      email: req.body.email,
+      password: req.body.password,
+    };
+
+    res.cookie("user_id", userID);
+    res.redirect("/urls");
+  } else {
+    let templateVars = {
+      error: "Invalid Username/Password",
+      username: req.cookies["user_id"],
+      user: { users },
+    };
+    res.status(400);
+    res.render("register", templateVars);
+  }
+
   console.log(users);
-  res.redirect("/urls");
 });
 
 // Login POST Route
-app.post("/login", (req, res) => {
-  res.cookie("user_id", req.body.username);
-
-  res.redirect("/urls");
+app.get("/login", (req, res) => {
+  res.render("/login");
 });
 
 // Log Out POST Route

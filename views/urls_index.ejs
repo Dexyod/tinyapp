@@ -28,7 +28,7 @@
         <tbody>
           <% for(let url in urls) { %>
           <tr>
-            <td><%= url %></td>
+            <td><a href="<%= urls[url] %>"><%= url %></a></td>
             <td><%= urls[url] %></td>
             <td>
               <form class="form-inline" method="GET" action="/urls/<%= url %>">
