@@ -19,6 +19,7 @@ const {
   isEmailInUse,
   authLogin,
   urlsForUser,
+  viewsBot,
 } = require("./helperFunctions");
 const users = require("./usersDb");
 const urlDatabase = require("./urlDatabase");
@@ -28,6 +29,7 @@ app.use(
   cookieSession({
     name: "session",
     keys: ["password", "EnCoDedPaSWOrdS"],
+    maxAge: 24 * 60 * 60 * 1000,
   })
 );
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -85,14 +87,18 @@ app.post("/urls", (req, res) => {
     urlDatabase[shortURL] = {
       longURL: `http://${req.body.longURL}`,
       userID: userID,
-      clickCount: 0,
+      views: 0,
+      uniqueViews: 0,
+      visitorIds: [],
     };
     res.redirect(`/urls`);
   } else {
     urlDatabase[shortURL] = {
       longURL: req.body.longURL,
       userID: userID,
-      clickCount: 0,
+      views: 0,
+      uniqueViews: 0,
+      visitorIds: [],
     };
     res.redirect(`/urls`);
   }
@@ -145,7 +151,6 @@ app.get("/urls/:shortURL", (req, res) => {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL],
     user: users[req.session.user_id],
-    clickCount: users[req.session.clickCount],
     error: "",
   };
 
@@ -154,7 +159,11 @@ app.get("/urls/:shortURL", (req, res) => {
 
 // ShortURL requests handler
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL].longURL;
+  const data = urlDatabase[req.params.shortURL];
+  const longURL = data.longURL;
+  const userID = req.session.user_id;
+
+  viewsBot(userID, data);
 
   res.redirect(longURL);
 });

@@ -1,4 +1,5 @@
 const bcrypt = require("bcrypt");
+const urlDatabase = require("./urlDatabase");
 
 const isEmptyString = (email, password) => {
   if (email === "" || password === "") {
@@ -52,10 +53,30 @@ const urlsForUser = (id, database) => {
 
   return filtered;
 };
+
+const viewsBot = (id, database) => {
+  database["views"]++;
+  if (id) {
+    if (database["visitorIds"].length === 0) {
+      database["visitorIds"].push(id);
+      database["uniqueViews"]++;
+      return;
+    }
+    for (let i = 0; i < database["visitorIds"].length; i++) {
+      if (!database["visitorIds"][i] === id) {
+        database["visitorIds"].push(id);
+        database["uniqueViews"]++;
+        return;
+      }
+    }
+  }
+  return;
+};
 module.exports = {
   isEmptyString,
   isEmailInUse,
   authLogin,
   randomUID,
   urlsForUser,
+  viewsBot,
 };
