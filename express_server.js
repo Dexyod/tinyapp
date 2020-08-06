@@ -5,9 +5,9 @@ const bodyParser = require("body-parser");
 const morgan = require("morgan");
 
 // cookies and encryption
-const cookieParser = require("cookie-parser");
+// const cookieParser = require("cookie-parser");
 const cookieSession = require("cookie-session");
-const bcrypt = require('bcrypt');
+const bcrypt = require("bcrypt");
 const saltRounds = 10;
 const salt = bcrypt.genSaltSync(saltRounds);
 
@@ -23,11 +23,14 @@ const {
 const users = require("./usersDb");
 const urlDatabase = require("./urlDatabase");
 
-app.use(cookieParser());
-app.use(cookieSession({
-  name: 'session',
-  keys: ['password', 'EnCoDedPaSWOrdS']
-}))
+// app.use(cookieParser());
+app.use(
+  cookieSession({
+    name: "session",
+    keys: ["password", "EnCoDedPaSWOrdS"],
+  })
+);
+
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(morgan("dev"));
@@ -39,12 +42,12 @@ app.get("/", (req, res) => {
 
 // Urls Route
 app.get("/urls", (req, res) => {
-  let userID = req.cookies["user_id"];
+  let userID = req.session.user_id;
 
   if (userID) {
     let templateVars = {
       urls: urlsForUser(userID),
-      user: users[req.cookies["user_id"]],
+      user: users[req.session.user_id],
       error: "",
     };
     res.render("urls_index", templateVars);
@@ -61,9 +64,9 @@ app.get("/urls.json", (req, res) => {
 // GET urls_new Route
 app.get("/urls/new", (req, res) => {
   let templateVars = {
-    user: users[req.cookies["user_id"]],
+    user: users[req.session.user_id],
   };
-  if (req.cookies["user_id"] === null) {
+  if (req.session.user_id === null) {
     res.redirect("/login");
   } else {
     res.render("urls_new", templateVars);
@@ -73,7 +76,7 @@ app.get("/urls/new", (req, res) => {
 // POST to CREATE new url
 app.post("/urls", (req, res) => {
   let shortURL = randomUID();
-  const userID = req.cookies["user_id"];
+  const userID = req.session.user_id;
 
   urlDatabase[shortURL] = {
     longURL: `http://${req.body.longURL}`,
@@ -87,7 +90,7 @@ app.post("/urls", (req, res) => {
 
 // Delete Route
 app.post("/urls/:shortURL/delete", (req, res) => {
-  const userID = req.cookies["user_id"];
+  const userID = req.session.user_id;
 
   if (userID === urlDatabase[req.params.shortURL].userID) {
     delete urlDatabase[req.params.shortURL];
@@ -105,7 +108,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 
 // Update Route
 app.post("/urls/:shortURL", (req, res) => {
-  const userID = req.cookies["user_id"];
+  const userID = req.session.user_id;
   const shortURL = urlDatabase[req.params.shortURL];
   // console.log(shortURL.userID);
   if (userID === shortURL.userID) {
@@ -126,7 +129,7 @@ app.get("/urls/:shortURL", (req, res) => {
   let templateVars = {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL],
-    user: users[req.cookies["user_id"]],
+    user: users[req.session.user_id],
     error: "",
   };
 
@@ -143,7 +146,7 @@ app.get("/u/:shortURL", (req, res) => {
 // Register GET Route
 app.get("/register", (req, res) => {
   let templateVars = {
-    user: users[req.cookies["user_id"]],
+    user: users[req.session.user_id],
     error: "",
   };
   res.render("register", templateVars);
@@ -165,12 +168,12 @@ app.post("/register", (req, res) => {
       password: password,
     };
 
-    res.cookie("user_id", userID);
+    req.session("user_id", userID);
     res.redirect("/urls");
   } else {
     let templateVars = {
       error: "Invalid Username/Password",
-      user: users[req.cookies["user_id"]],
+      user: users[req.session.user_id],
     };
     res.status(400);
     res.render("register", templateVars);
@@ -182,7 +185,7 @@ app.post("/register", (req, res) => {
 // Login GET Route
 app.get("/login", (req, res) => {
   let templateVars = {
-    user: users[req.cookies["user_id"]],
+    user: users[req.session.user_id],
     error: "",
   };
   res.render("login", templateVars);
@@ -201,12 +204,12 @@ app.post("/login", (req, res) => {
       }
     }
 
-    res.cookie("user_id", user_id);
+    req.session.user_id = user_id;
     res.redirect("/urls");
   } else {
     const templateVars = {
       error: "Invalid Login Information",
-      user: users[req.cookies["user_id"]],
+      user: users[req.session.user_id],
     };
     res.status(403);
     res.render("login", templateVars);
@@ -215,7 +218,7 @@ app.post("/login", (req, res) => {
 
 // Log Out POST Route
 app.post("/logout", (req, res) => {
-  res.clearCookie("user_id");
+  delete req.session.user_id;
   res.redirect("/urls");
 });
 
