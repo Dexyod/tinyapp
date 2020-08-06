@@ -47,6 +47,10 @@ const urlsForUser = (id, database) => {
       filtered[key] = {
         longURL: database[key].longURL,
         userID: id,
+        views: database[key].views,
+        visitorIds: database[key].visitorIds,
+        uniqueViews: database[key].uniqueViews,
+        timeStamps: database[key].timestamp,
       };
     }
   }
@@ -55,16 +59,18 @@ const urlsForUser = (id, database) => {
 };
 
 const viewsBot = (id, database) => {
+  let timestamp = new Date().toUTCString();
+  timestamp = timestamp.split(" ").slice(0, 6).join(" ");
   database["views"]++;
   if (id) {
     if (database["visitorIds"].length === 0) {
-      database["visitorIds"].push(id);
+      database["visitorIds"].push([id, timestamp]);
       database["uniqueViews"]++;
       return;
     }
     for (let i = 0; i < database["visitorIds"].length; i++) {
       if (!database["visitorIds"][i] === id) {
-        database["visitorIds"].push(id);
+        database["visitorIds"].push([id, timestamp]);
         database["uniqueViews"]++;
         return;
       }

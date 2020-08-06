@@ -45,6 +45,32 @@
           </form>
         </div>
       </div>
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Short URL</th>
+            <th scope="col">Views</th>
+            <th scope="col">Unique Users</th>
+            <th scope="col">Time Stamps</th>
+            <th scope="col">Unique Views</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <a href="/u/<%= shortURL %>"><%= shortURL %></a>
+            </td>
+            <td><%= longURL.views %></td>
+            <% if (longURL.visitorIds.length !== 0) { %> <% for( let i of
+            longURL.visitorIds[0]) { %>
+            <td><%= i %></td>
+            <% } %> <% } %>
+            <td>
+              <%= longURL.uniqueViews %>
+            </td>
+          </tr>
+        </tbody>
+      </table>
       <div class="card-footer text-muted"></div>
     </div>
     <!-- Bootstrap JS -->

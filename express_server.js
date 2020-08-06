@@ -21,9 +21,12 @@ const {
   urlsForUser,
   viewsBot,
 } = require("./helperFunctions");
+
+// Import fake DBs
 const users = require("./usersDb");
 const urlDatabase = require("./urlDatabase");
 
+// Set up server config
 app.set("view engine", "ejs");
 app.use(
   cookieSession({
@@ -36,14 +39,25 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(morgan("dev"));
 app.use(methodOverride("_method"));
 
-// Home Route
+// GET Home Route
 app.get("/", (req, res) => {
   res.redirect("/urls");
 });
 
-// Urls Route
+// Added some helper routes so I can see the DBs easily
+// GET Route for urls JSON DB
+app.get("/urls.json", (req, res) => {
+  res.json(urlDatabase);
+});
+
+// GET route for users JSON DB
+app.get("/users.json", (req, res) => {
+  res.json(users);
+});
+
+//  GET urls_index Route
 app.get("/urls", (req, res) => {
-  let userID = req.session.user_id;
+  const userID = req.session.user_id;
 
   if (userID) {
     let templateVars = {
@@ -55,16 +69,6 @@ app.get("/urls", (req, res) => {
   } else {
     res.redirect("/login");
   }
-});
-
-// GET Route for urls JSON DB
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
-});
-
-// GET route for users JSON DB
-app.get("/users.json", (req, res) => {
-  res.json(users);
 });
 
 // GET urls_new Route
@@ -83,25 +87,17 @@ app.get("/urls/new", (req, res) => {
 app.post("/urls", (req, res) => {
   let shortURL = randomUID();
   const userID = req.session.user_id;
-  if (!req.body.longURL.includes("http://", 0)) {
-    urlDatabase[shortURL] = {
-      longURL: `http://${req.body.longURL}`,
-      userID: userID,
-      views: 0,
-      uniqueViews: 0,
-      visitorIds: [],
-    };
-    res.redirect(`/urls`);
-  } else {
-    urlDatabase[shortURL] = {
-      longURL: req.body.longURL,
-      userID: userID,
-      views: 0,
-      uniqueViews: 0,
-      visitorIds: [],
-    };
-    res.redirect(`/urls`);
-  }
+
+  urlDatabase[shortURL] = {
+    longURL: req.body.longURL.includes("http://", 0)
+      ? req.body.longURL
+      : `http://${req.body.longURL}`,
+    userID: userID,
+    views: 0,
+    uniqueViews: 0,
+    visitorIds: [],
+  };
+  res.redirect(`/urls`);
 });
 
 // Delete Route
@@ -126,15 +122,12 @@ app.delete("/urls/:shortURL/", (req, res) => {
 app.put("/urls/:shortURL", (req, res) => {
   const userID = req.session.user_id;
   const shortURL = urlDatabase[req.params.shortURL];
-  // console.log(shortURL.userID);
+
   if (userID === shortURL.userID) {
-    if (!req.body.longURL.includes("http://", 0)) {
-      shortURL.longURL = `http://${req.body.longURL}`;
-      res.redirect("/urls");
-    } else {
-      shortURL.longURL = req.body.longURL;
-      res.redirect("/urls");
-    }
+    shortURL.longURL = req.body.longURL.includes("http://", 0)
+      ? req.body.longURL
+      : `http://${req.body.longURL}`;
+    res.redirect("/urls");
   } else {
     let templateVars = {
       error: "Permission Denied",
