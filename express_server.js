@@ -46,7 +46,7 @@ app.get("/urls", (req, res) => {
 
   if (userID) {
     let templateVars = {
-      urls: urlsForUser(userID),
+      urls: urlsForUser(userID, urlDatabase),
       user: users[req.session.user_id],
       error: "",
     };
@@ -77,15 +77,19 @@ app.get("/urls/new", (req, res) => {
 app.post("/urls", (req, res) => {
   let shortURL = randomUID();
   const userID = req.session.user_id;
-
-  urlDatabase[shortURL] = {
-    longURL: `http://${req.body.longURL}`,
-    userID: userID,
-  };
-
-  console.log(`New URL ${shortURL} Created`);
-  //redirect back to urls
-  res.redirect(`/urls`);
+  if (!req.body.longURL.includes("http://", 0)) {
+    urlDatabase[shortURL] = {
+      longURL: `http://${req.body.longURL}`,
+      userID: userID,
+    };
+    res.redirect(`/urls`);
+  } else {
+    urlDatabase[shortURL] = {
+      longURL: req.body.longURL,
+      userID: userID,
+    };
+    res.redirect(`/urls`);
+  }
 });
 
 // Delete Route
@@ -112,8 +116,13 @@ app.post("/urls/:shortURL", (req, res) => {
   const shortURL = urlDatabase[req.params.shortURL];
   // console.log(shortURL.userID);
   if (userID === shortURL.userID) {
-    shortURL.longURL = `http://${req.body.longURL}`;
-    res.redirect("/urls");
+    if (!req.body.longURL.includes("http://", 0)) {
+      shortURL.longURL = `http://${req.body.longURL}`;
+      res.redirect("/urls");
+    } else {
+      shortURL.longURL = req.body.longURL;
+      res.redirect("/urls");
+    }
   } else {
     let templateVars = {
       error: "Permission Denied",
@@ -159,7 +168,7 @@ app.post("/register", (req, res) => {
   const password = bcrypt.hashSync(req.body.password, salt);
 
   if (
-    isEmailInUse(email) === false &&
+    isEmailInUse(email, users) === false &&
     isEmptyString(email, password) === false
   ) {
     users[userID] = {
@@ -196,7 +205,7 @@ app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
 
-  if (authLogin(email, password)) {
+  if (authLogin(email, password, users)) {
     let user_id = "";
     for (const key in users) {
       if (users[key].email === email) {
@@ -218,7 +227,7 @@ app.post("/login", (req, res) => {
 
 // Log Out POST Route
 app.post("/logout", (req, res) => {
-  delete req.session.user_id;
+  req.session = null;
   res.redirect("/urls");
 });
 

@@ -1,8 +1,4 @@
-const users = require("./usersDb");
-const urlDatabase = require("./urlDatabase");
 const bcrypt = require("bcrypt");
-const saltRounds = 10;
-const salt = bcrypt.genSaltSync(saltRounds);
 
 const isEmptyString = (email, password) => {
   if (email === "" || password === "") {
@@ -12,18 +8,21 @@ const isEmptyString = (email, password) => {
   }
 };
 
-const isEmailInUse = (email) => {
-  for (const key in users) {
-    if (users[key].email === email) {
+const isEmailInUse = (email, database) => {
+  for (const key in database) {
+    if (database[key].email === email) {
       return true;
     }
   }
   return false;
 };
 
-const authLogin = (email, password) => {
-  for (const key in users) {
-    if (users[key].email === email && bcrypt.compareSync(password, users[key].password)) {
+const authLogin = (email, password, database) => {
+  for (const key in database) {
+    if (
+      database[key].email === email &&
+      bcrypt.compareSync(password, database[key].password)
+    ) {
       return true;
     }
   }
@@ -36,12 +35,12 @@ const randomUID = () => {
   return randomString;
 };
 
-const urlsForUser = (id) => {
+const urlsForUser = (id, database) => {
   let filtered = {};
-  for (const key in urlDatabase) {
-    if (urlDatabase[key].userID === id) {
+  for (const key in database) {
+    if (database[key].userID === id) {
       filtered[key] = {
-        longURL: urlDatabase[key].longURL,
+        longURL: database[key].longURL,
         userID: id,
       };
     }
