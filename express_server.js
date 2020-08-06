@@ -1,9 +1,17 @@
 // Set up requirements for server
 const express = require("express");
 const app = express();
-const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
 const morgan = require("morgan");
+
+// cookies and encryption
+const cookieParser = require("cookie-parser");
+const cookieSession = require("cookie-session");
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
+const salt = bcrypt.genSaltSync(saltRounds);
+
+// constant variables and helper functions
 const PORT = 8080;
 const {
   randomUID,
@@ -16,6 +24,10 @@ const users = require("./usersDb");
 const urlDatabase = require("./urlDatabase");
 
 app.use(cookieParser());
+app.use(cookieSession({
+  name: 'session',
+  keys: ['password', 'EnCoDedPaSWOrdS']
+}))
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(morgan("dev"));
