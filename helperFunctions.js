@@ -1,5 +1,8 @@
 const users = require("./usersDb");
 const urlDatabase = require("./urlDatabase");
+const bcrypt = require("bcrypt");
+const saltRounds = 10;
+const salt = bcrypt.genSaltSync(saltRounds);
 
 const isEmptyString = (email, password) => {
   if (email === "" || password === "") {
@@ -20,7 +23,7 @@ const isEmailInUse = (email) => {
 
 const authLogin = (email, password) => {
   for (const key in users) {
-    if (users[key].email === email && users[key].password === password) {
+    if (users[key].email === email && bcrypt.compareSync(password, users[key].password)) {
       return true;
     }
   }

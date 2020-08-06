@@ -156,7 +156,7 @@ app.get("/register", (req, res) => {
 app.post("/register", (req, res) => {
   const userID = randomUID();
   const email = req.body.email;
-  const password = req.body.password;
+  const password = bcrypt.hashSync(req.body.password, salt);
 
   if (
     isEmailInUse(email) === false &&
@@ -168,7 +168,7 @@ app.post("/register", (req, res) => {
       password: password,
     };
 
-    req.session("user_id", userID);
+    req.session.user_id = userID;
     res.redirect("/urls");
   } else {
     let templateVars = {
