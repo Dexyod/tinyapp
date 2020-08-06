@@ -3,9 +3,9 @@ const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
 const morgan = require("morgan");
+const methodOverride = require("method-override");
 
 // cookies and encryption
-// const cookieParser = require("cookie-parser");
 const cookieSession = require("cookie-session");
 const bcrypt = require("bcrypt");
 const saltRounds = 10;
@@ -23,17 +23,16 @@ const {
 const users = require("./usersDb");
 const urlDatabase = require("./urlDatabase");
 
-// app.use(cookieParser());
+app.set("view engine", "ejs");
 app.use(
   cookieSession({
     name: "session",
     keys: ["password", "EnCoDedPaSWOrdS"],
   })
 );
-
-app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(morgan("dev"));
+app.use(methodOverride("_method"));
 
 // Home Route
 app.get("/", (req, res) => {
@@ -56,9 +55,14 @@ app.get("/urls", (req, res) => {
   }
 });
 
-// Urls Route for JSON
+// GET Route for urls JSON DB
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
+});
+
+// GET route for users JSON DB
+app.get("/users.json", (req, res) => {
+  res.json(users);
 });
 
 // GET urls_new Route
@@ -81,19 +85,21 @@ app.post("/urls", (req, res) => {
     urlDatabase[shortURL] = {
       longURL: `http://${req.body.longURL}`,
       userID: userID,
+      clickCount: 0,
     };
     res.redirect(`/urls`);
   } else {
     urlDatabase[shortURL] = {
       longURL: req.body.longURL,
       userID: userID,
+      clickCount: 0,
     };
     res.redirect(`/urls`);
   }
 });
 
 // Delete Route
-app.post("/urls/:shortURL/delete", (req, res) => {
+app.delete("/urls/:shortURL/", (req, res) => {
   const userID = req.session.user_id;
 
   if (userID === urlDatabase[req.params.shortURL].userID) {
@@ -111,7 +117,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 });
 
 // Update Route
-app.post("/urls/:shortURL", (req, res) => {
+app.put("/urls/:shortURL", (req, res) => {
   const userID = req.session.user_id;
   const shortURL = urlDatabase[req.params.shortURL];
   // console.log(shortURL.userID);
@@ -139,6 +145,7 @@ app.get("/urls/:shortURL", (req, res) => {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL],
     user: users[req.session.user_id],
+    clickCount: users[req.session.clickCount],
     error: "",
   };
 
