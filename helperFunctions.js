@@ -3,9 +3,13 @@ const bcrypt = require("bcrypt");
 const isEmptyString = (email, password) => {
   if (email === "" || password === "") {
     return true;
-  } else {
-    return false;
   }
+
+  if (typeof email !== "string" || typeof password !== "string") {
+    return true;
+  }
+
+  return false;
 };
 
 const isEmailInUse = (email, database) => {
