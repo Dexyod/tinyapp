@@ -33,8 +33,8 @@ app.get("/urls", (req, res) => {
     let templateVars = {
       urls: urlsForUser(userID),
       user: users[req.cookies["user_id"]],
+      error: "",
     };
-    console.log(templateVars);
     res.render("urls_index", templateVars);
   } else {
     res.redirect("/login");
@@ -75,17 +75,38 @@ app.post("/urls", (req, res) => {
 
 // Delete Route
 app.post("/urls/:shortURL/delete", (req, res) => {
-  delete urlDatabase[req.params.shortURL];
+  const userID = req.cookies["user_id"];
 
-  console.log(`${req.params.shortURL} Deleted`);
-  res.redirect("/urls");
+  if (userID === urlDatabase[req.params.shortURL].userID) {
+    delete urlDatabase[req.params.shortURL];
+
+    res.redirect("/urls");
+  } else {
+    let templateVars = {
+      error: "Permission Denied",
+      user: userID,
+    };
+    res.status(403);
+    res.render("urls_index", templateVars);
+  }
 });
 
 // Update Route
 app.post("/urls/:shortURL", (req, res) => {
-  urlDatabase[req.params.shortURL].longURL = `http://${req.body.longURL}`;
-
-  res.redirect("/urls");
+  const userID = req.cookies["user_id"];
+  const shortURL = urlDatabase[req.params.shortURL];
+  // console.log(shortURL.userID);
+  if (userID === shortURL.userID) {
+    shortURL.longURL = `http://${req.body.longURL}`;
+    res.redirect("/urls");
+  } else {
+    let templateVars = {
+      error: "Permission Denied",
+      user: userID,
+    };
+    res.status(403);
+    res.render("urls_show", templateVars);
+  }
 });
 
 // GET urls_show Route
@@ -94,6 +115,7 @@ app.get("/urls/:shortURL", (req, res) => {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL],
     user: users[req.cookies["user_id"]],
+    error: "",
   };
 
   res.render("urls_show", templateVars);
