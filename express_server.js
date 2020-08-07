@@ -20,11 +20,11 @@ const {
   authLogin,
   urlsForUser,
   viewsBot,
-} = require("./helperFunctions");
+} = require("./public/helper/helperFunctions");
 
 // Import fake DBs
-const users = require("./usersDb");
-const urlDatabase = require("./urlDatabase");
+const users = require("./database/usersDb");
+const urlDatabase = require("./database/urlDatabase");
 
 // Set up server config
 app.set("view engine", "ejs");
@@ -201,8 +201,6 @@ app.post("/register", (req, res) => {
     res.status(400);
     res.render("register", templateVars);
   }
-
-  // console.log(users);
 });
 
 // Login GET Route
@@ -220,10 +218,9 @@ app.post("/login", (req, res) => {
   const password = req.body.password;
 
   if (authLogin(email, password, users)) {
-    let user_id = "";
     for (const key in users) {
       if (users[key].email === email) {
-        user_id += users[key].id;
+        user_id = users[key].id;
       }
     }
 

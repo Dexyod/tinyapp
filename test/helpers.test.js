@@ -8,7 +8,7 @@ const {
   isEmailInUse,
   authLogin,
   urlsForUser,
-} = require("../helperFunctions");
+} = require("../public/helper/helperFunctions");
 
 const testUsers = {
   userRandomID: {
