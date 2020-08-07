@@ -140,14 +140,19 @@ app.put("/urls/:shortURL", (req, res) => {
 
 // GET urls_show Route
 app.get("/urls/:shortURL", (req, res) => {
+  const userID = req.session.user_id;
   let templateVars = {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL],
     user: users[req.session.user_id],
     error: "",
   };
-
-  res.render("urls_show", templateVars);
+  if (userID === templateVars.longURL.userID) {
+    res.render("urls_show", templateVars);
+  } else {
+    res.status(403);
+    res.redirect("/urls");
+  }
 });
 
 // ShortURL requests handler
@@ -174,7 +179,7 @@ app.get("/register", (req, res) => {
 app.post("/register", (req, res) => {
   const userID = randomUID();
   const email = req.body.email;
-  const password = bcrypt.hashSync(req.body.password, salt);
+  const password = req.body.password;
 
   if (
     isEmailInUse(email, users) === false &&
@@ -183,7 +188,7 @@ app.post("/register", (req, res) => {
     users[userID] = {
       id: userID,
       email: email,
-      password: password,
+      password: bcrypt.hashSync(password, salt),
     };
 
     req.session.user_id = userID;
