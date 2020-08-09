@@ -55,7 +55,7 @@ app.get("/users.json", (req, res) => {
   res.json(users);
 });
 
-//  GET urls_index Route
+//  GET urls Route
 app.get("/urls", (req, res) => {
   const userID = req.session.user_id;
 
