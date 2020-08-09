@@ -138,32 +138,58 @@ app.put("/urls/:shortURL", (req, res) => {
   }
 });
 
-// GET urls_show Route
+// GET urls/:id Route
 app.get("/urls/:shortURL", (req, res) => {
   const userID = req.session.user_id;
-  let templateVars = {
-    shortURL: req.params.shortURL,
-    longURL: urlDatabase[req.params.shortURL],
-    user: users[req.session.user_id],
-    error: "",
-  };
-  if (userID === templateVars.longURL.userID) {
+  const urlID = req.params.shortURL;
+  const userURLS = urlsForUser(userID, urlDatabase);
+  let urlExists = false;
+  let templateVars = {};
+  for (const key in userURLS) {
+    if (urlID === key) {
+      urlExists = true;
+      templateVars = {
+        shortURL: urlID,
+        longURL: urlDatabase[urlID],
+        user: users[userID],
+        error: "",
+      };
+    }
+  }
+  if (urlExists && userID === templateVars.longURL.userID) {
     res.render("urls_show", templateVars);
   } else {
     res.status(403);
-    res.redirect("/urls");
+    res.send(
+      `<div id="main">
+        <div class="fof">
+          <h1>Error 404: ShortURL Not Found</h1>
+          <a href="${"http://localhost:8080/urls"}">Home</a>
+        </div>
+      </div>`
+    );
   }
 });
 
 // ShortURL requests handler
 app.get("/u/:shortURL", (req, res) => {
-  const data = urlDatabase[req.params.shortURL];
-  const longURL = data.longURL;
-  const userID = req.session.user_id;
-
-  viewsBot(userID, data);
-
-  res.redirect(longURL);
+  if (!urlDatabase[req.params.shortURL]) {
+    res.status(404);
+    res.send(
+      `<div id="main">
+        <div class="fof">
+          <h1>Error 404: ShortURL Not Found</h1>
+          <a href="${"http://localhost:8080/urls"}">Home</a>
+        </div>
+      </div>`
+    );
+  } else {
+    const data = urlDatabase[req.params.shortURL];
+    const longURL = data.longURL;
+    const userID = req.session.user_id;
+    viewsBot(userID, data);
+    res.redirect(longURL);
+  }
 });
 
 // Register GET Route
