@@ -71,7 +71,7 @@ app.get("/urls", (req, res) => {
   }
 });
 
-// GET urls_new Route
+// GET urls/new Route create page
 app.get("/urls/new", (req, res) => {
   let templateVars = {
     user: users[req.session.user_id],
